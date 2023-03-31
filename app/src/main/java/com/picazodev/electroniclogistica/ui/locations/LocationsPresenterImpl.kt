@@ -33,13 +33,12 @@ class LocationsPresenterImpl(
     var locationMap = mapOf<String, Location>()
     var productMap = mapOf<String, Product>()
 
-    var listOfSortedProductindices = listOf<Int>()
+    var listOfSortedProductindices = mutableListOf<Int>()
 
 
 
     init {
         getMaximumAptitude()
-        getListOfSortedProductindices()
 
     }
 
@@ -49,9 +48,10 @@ class LocationsPresenterImpl(
 
     fun getListOfSortedProductindices(){
         launch {
-            listOfSortedProductindices = withContext(Dispatchers.Default){
+             val indices = withContext(Dispatchers.Default){
                 locationAlgorithm.getListOfProductIndex()
             }
+            listOfSortedProductindices.addAll(indices)
         }
     }
 
@@ -74,6 +74,8 @@ class LocationsPresenterImpl(
                 ubicationsView.dataStatus(CombinationsApiStatus.DONE)
                 combinationsStatus = CombinationsApiStatus.DONE
                 ubicationsView.setAptitudeText(maximumAptitude.toString())
+
+                getListOfSortedProductindices()
             } catch (e: Exception){
                 ubicationsView.dataStatus(CombinationsApiStatus.ERROR)
                 combinationsStatus = CombinationsApiStatus.ERROR

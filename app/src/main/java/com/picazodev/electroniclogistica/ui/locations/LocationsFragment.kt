@@ -27,11 +27,6 @@ class LocationsFragment : Fragment(), LocationsView {
     private lateinit var clickLocationLambda : (locationIndex: Int) -> Unit
 
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-
-    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,

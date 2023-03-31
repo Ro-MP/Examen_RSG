@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">Electronic Logistica</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="locations_title">Ubicaciones</string>
+    <string name="aptitude_title">Aptitud alcanzada:</string>
+</resources>

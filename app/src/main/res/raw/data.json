@@ -1,0 +1,96 @@
+{
+  "products": [
+    {
+      "name": "Teléfono móvil",
+      "weight": 12,
+      "volume": 10
+    },
+    {
+      "name": "Tablet",
+      "weight": 13,
+      "volume": 5
+    },
+    {
+      "name": "Portátil y ordenador de mesa",
+      "weight": 14,
+      "volume": 8
+    },
+    {
+      "name": "Cámara inalámbrica",
+      "weight": 15,
+      "volume": 15
+    },
+    {
+      "name": "Robot aspirador de limpieza",
+      "weight": 16,
+      "volume": 6
+    },
+    {
+      "name": "Robot de cocina",
+      "weight": 17,
+      "volume": 13
+    },
+    {
+      "name": "Enchufes en hogar inteligente",
+      "weight": 18,
+      "volume": 9
+    },
+    {
+      "name": "Localizador de llaves",
+      "weight": 19,
+      "volume": 11
+    },
+    {
+      "name": "Relojes",
+      "weight": 20,
+      "volume": 7
+    },
+    {
+      "name": "Televisores",
+      "weight": 21,
+      "volume": 14
+    }
+  ],  
+  "locations": [
+    {
+      "name": "Estado de México",
+      "type": "TUU_IOLI9" 
+    },
+    {
+         "name": "Guanajuato", 
+      "type": "MOOOPL_YRUZE" 
+    },
+    {
+      "name": "Nuevo León",
+      "type": "TUU_IOLI9" 
+    },
+    {
+      "name": "Quintana Roo",
+      "type": "MOOOPL_YRUZE" 
+    },
+    {
+      "name": "San Luis Potosí",
+      "type": "TUU_IOLI9" 
+    },
+    {
+      "name": "Querétaro",
+      "type": "MOOOPL_YRUZE" 
+    },
+    {
+      "name": "Puebla",
+      "type": "TUU_IOLI9" 
+    },
+    {
+      "name": "Hidalgo",
+      "type": "MOOOPL_YRUZE" 
+    },
+    {
+      "name": "Guerrero",
+      "type": "TUU_IOLI9" 
+    },
+    {
+      "name": "Nayarit",
+      "type": "MOOOPL_YRUZE" 
+    }
+  ]
+}

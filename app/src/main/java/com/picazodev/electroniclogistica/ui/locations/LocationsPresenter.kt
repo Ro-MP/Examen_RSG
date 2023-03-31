@@ -1,0 +1,13 @@
+package com.picazodev.electroniclogistica.ui.locations
+
+import com.picazodev.electroniclogistica.data.Location
+import java.io.InputStream
+
+interface LocationsPresenter {
+
+    fun initializeApi(jsonData: InputStream)
+
+    fun getLocationsList()
+
+    fun cancelJob()
+}

@@ -1,6 +1,5 @@
 package com.picazodev.electroniclogistica.ui.locations
 
-import android.opengl.Visibility
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -11,6 +10,7 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.picazodev.electroniclogistica.R
 import com.picazodev.electroniclogistica.data.Location
+import com.picazodev.electroniclogistica.data.local.CombinationDatabase
 import com.picazodev.electroniclogistica.databinding.FragmentLocationsBinding
 import com.picazodev.electroniclogistica.toKeyForLocationMap
 import com.picazodev.electroniclogistica.toKeyForProductMap
@@ -35,8 +35,12 @@ class LocationsFragment : Fragment(), LocationsView {
         _binding = FragmentLocationsBinding.inflate(inflater, container, false)
         val view = binding.root
 
+
+        val application = requireNotNull(this.activity).application
+        val dataSource = CombinationDatabase.getInstance(application).combinationDatabaseDao
+
         val jsonData = resources.openRawResource(R.raw.data)
-        locationsPresenter = LocationsPresenterImpl(this, jsonData)
+        locationsPresenter = LocationsPresenterImpl(this, jsonData, dataSource)
 
         getLocationsList()
 

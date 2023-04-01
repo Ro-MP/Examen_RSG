@@ -3,6 +3,7 @@ package com.picazodev.electroniclogistica.ui.productdetail
 import com.picazodev.electroniclogistica.data.Location
 import com.picazodev.electroniclogistica.data.Product
 import com.picazodev.electroniclogistica.data.RepositoryImpl
+import com.picazodev.electroniclogistica.data.local.CombinationDatabaseDao
 import com.picazodev.electroniclogistica.data.remote.DataApi
 import kotlinx.coroutines.*
 import java.io.InputStream
@@ -12,7 +13,8 @@ class ProductDetailPresenterImpl(
     private val productDetailView: ProductDetailFragment,
     private val locationKey: String,
     private val productKey: String,
-    private val jsonData: InputStream
+    private val jsonData: InputStream,
+    dataSource: CombinationDatabaseDao
 ) : ProductDetailPresenter, CoroutineScope {
 
     override val coroutineContext: CoroutineContext
@@ -23,7 +25,7 @@ class ProductDetailPresenterImpl(
 
 
     val apiInstance : DataApi = DataApi.getInstance(jsonData)
-    val repository : RepositoryImpl = RepositoryImpl(apiInstance)
+    val repository : RepositoryImpl = RepositoryImpl(apiInstance, dataSource)
 
     var locationMap = mapOf<String, Location>()
     var productMap = mapOf<String, Product>()

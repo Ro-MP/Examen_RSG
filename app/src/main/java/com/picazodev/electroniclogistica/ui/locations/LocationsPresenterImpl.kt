@@ -4,6 +4,7 @@ package com.picazodev.electroniclogistica.ui.locations
 import com.picazodev.electroniclogistica.data.Location
 import com.picazodev.electroniclogistica.data.Product
 import com.picazodev.electroniclogistica.data.RepositoryImpl
+import com.picazodev.electroniclogistica.data.local.CombinationDatabaseDao
 import com.picazodev.electroniclogistica.data.remote.DataApi
 import com.picazodev.electroniclogistica.domain.LocationAlgorithm
 import kotlinx.coroutines.*
@@ -14,7 +15,8 @@ enum class CombinationsApiStatus { LOADING, ERROR, DONE}
 
 class LocationsPresenterImpl(
     private val ubicationsView: LocationsFragment,
-    private val jsonData: InputStream
+    jsonData: InputStream,
+    dataSource: CombinationDatabaseDao
 ) : LocationsPresenter, CoroutineScope {
 
 
@@ -25,7 +27,7 @@ class LocationsPresenterImpl(
     private var job = SupervisorJob()
 
     val apiInstance : DataApi = DataApi.getInstance(jsonData)
-    val repository : RepositoryImpl = RepositoryImpl(apiInstance)
+    val repository : RepositoryImpl = RepositoryImpl(apiInstance, dataSource)
     val locationAlgorithm = LocationAlgorithm(repository)
 
     var combinationsStatus = CombinationsApiStatus.LOADING
@@ -66,11 +68,13 @@ class LocationsPresenterImpl(
                 val maximumAptitude = withContext(Dispatchers.Default){
                     locationAlgorithm.getMaximumAptitude()
                 }
+
                 println("# # # -  Aptitud Máxima: $maximumAptitude  - # # #")
                 println("# # # -  Numero de posibles combinaciones encontradas: ${locationAlgorithm.numeroDeIteraciones}  - # # #")
                 val tFinal = System.currentTimeMillis()
                 val tDiferencia = tFinal - tInicio
                 println("# # # -  Tiempo transcurrido: ${tDiferencia/1000.0} seg - # # #")
+
                 ubicationsView.dataStatus(CombinationsApiStatus.DONE)
                 combinationsStatus = CombinationsApiStatus.DONE
                 ubicationsView.setAptitudeText(maximumAptitude.toString())

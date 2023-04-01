@@ -1,12 +1,13 @@
 package com.picazodev.electroniclogistica.data
 
+import com.picazodev.electroniclogistica.data.local.Combination
+import com.picazodev.electroniclogistica.data.local.CombinationDatabaseDao
 import com.picazodev.electroniclogistica.data.remote.DataApi
 import com.picazodev.electroniclogistica.data.remote.DataProperty
 import com.picazodev.electroniclogistica.toKeyForLocationMap
 import com.picazodev.electroniclogistica.toKeyForProductMap
-import java.io.InputStream
 
-class RepositoryImpl(val dataApi: DataApi) : Repository {
+class RepositoryImpl(val dataApi: DataApi, val dataSource: CombinationDatabaseDao) : Repository {
 
 
     /*
@@ -48,6 +49,21 @@ class RepositoryImpl(val dataApi: DataApi) : Repository {
         return dataApi.getDataProperty()
     }
 
+
+    suspend fun addCombination(sortedProductIndexList: List<Int>){
+        val locationList = getLocationsList()
+
+        for (index in locationList.indices){
+            val combination = Combination(
+                index.toKeyForLocationMap(), sortedProductIndexList[index].toKeyForProductMap())
+
+            dataSource.insert(combination)
+        }
+    }
+
+    suspend fun getCombinatiosList(): List<Combination>? {
+        return dataSource.getAllCombination()
+    }
 
 }
 

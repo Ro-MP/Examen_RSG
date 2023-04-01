@@ -3,6 +3,7 @@ package com.picazodev.electroniclogistica.domain
 import com.picazodev.electroniclogistica.data.Location
 import com.picazodev.electroniclogistica.data.Product
 import com.picazodev.electroniclogistica.data.RepositoryImpl
+import com.picazodev.electroniclogistica.data.local.Combination
 
 class LocationAlgorithm(val repository: RepositoryImpl) {
 
@@ -13,6 +14,9 @@ class LocationAlgorithm(val repository: RepositoryImpl) {
     private val maximumAptitudeCombination = mutableListOf< List<Int> >()
     var numeroDeIteraciones = 0
 
+    var isCombinationDatabaseNull = true
+    var combinationList : List<Combination>? = null
+
 
 
     init {
@@ -20,6 +24,20 @@ class LocationAlgorithm(val repository: RepositoryImpl) {
 
     }
 
+
+    suspend fun getCombinationList(): List<Combination>?{
+        return repository.getCombinatiosList()
+    }
+
+    fun makeMaximumAptitudeCombinationFromCombinationList(){
+        combinationList?.apply {
+            for (combination in this){
+                val pair = listOf(combination.locationKeyMap.toInt(), combination.productKeyMap.toInt())
+                maximumAptitudeCombination.add(pair)
+            }
+        }
+
+    }
 
     suspend fun getListOfProductIndex(): List<Int> {
         if (maximumAptitudeCombination.isEmpty()){
@@ -43,7 +61,14 @@ class LocationAlgorithm(val repository: RepositoryImpl) {
         if (maximumAptitudeCombination.isEmpty()){
             getLocations()
             getProducts()
-            produceMaximumAptitude(maximumAptitudeCombination, getBSelectedToFalse())
+            combinationList = getCombinationList()
+            if (combinationList?.isEmpty()!!){
+                produceMaximumAptitude(maximumAptitudeCombination, getBSelectedToFalse())
+                val sortedCombinationList = getListOfProductIndex()
+                repository.addCombination(sortedCombinationList)
+            } else{
+                makeMaximumAptitudeCombinationFromCombinationList()
+            }
         }
 
         return getTotalAptitude(maximumAptitudeCombination)
@@ -61,6 +86,7 @@ class LocationAlgorithm(val repository: RepositoryImpl) {
     private suspend fun getProducts(){
         productsList = repository.getProductsList()
     }
+
 
 
 

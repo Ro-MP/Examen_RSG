@@ -6,6 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import com.picazodev.electroniclogistica.R
+import com.picazodev.electroniclogistica.data.local.CombinationDatabase
 import com.picazodev.electroniclogistica.databinding.FragmentProductDetailBinding
 
 
@@ -25,10 +26,14 @@ class ProductDetailFragment : Fragment(), ProductDetailView {
         _binding = FragmentProductDetailBinding.inflate(inflater, container, false)
         val view = binding.root
 
+
+        val application = requireNotNull(this.activity).application
+        val dataSource = CombinationDatabase.getInstance(application).combinationDatabaseDao
+
         val args = ProductDetailFragmentArgs.fromBundle(requireArguments())
         val jsonData = resources.openRawResource(R.raw.data)
 
-        productDetailPresenter = ProductDetailPresenterImpl(this, args.locationKey, args.productKey, jsonData)
+        productDetailPresenter = ProductDetailPresenterImpl(this, args.locationKey, args.productKey, jsonData, dataSource)
 
 
 

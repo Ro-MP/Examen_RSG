@@ -5,6 +5,7 @@ import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Update
 import com.google.android.material.color.utilities.Score
+import dagger.Provides
 
 @Dao
 interface CombinationDatabaseDao {

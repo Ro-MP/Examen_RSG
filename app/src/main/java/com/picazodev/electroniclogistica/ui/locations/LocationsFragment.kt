@@ -12,17 +12,22 @@ import com.picazodev.electroniclogistica.R
 import com.picazodev.electroniclogistica.data.Location
 import com.picazodev.electroniclogistica.data.local.CombinationDatabase
 import com.picazodev.electroniclogistica.databinding.FragmentLocationsBinding
-import com.picazodev.electroniclogistica.toKeyForLocationMap
-import com.picazodev.electroniclogistica.toKeyForProductMap
+import com.picazodev.electroniclogistica.util.toKeyForLocationMap
+import com.picazodev.electroniclogistica.util.toKeyForProductMap
+import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
-
+@AndroidEntryPoint
 class LocationsFragment : Fragment(), LocationsView {
 
     private var _binding: FragmentLocationsBinding? = null
     private val binding get() = _binding!!
 
 
-    private lateinit var locationsPresenter : LocationsPresenterImpl
+    @Inject
+    lateinit var locationsPresenter: LocationsPresenter
+
+
 
     private lateinit var clickLocationLambda : (locationIndex: Int) -> Unit
 
@@ -36,11 +41,10 @@ class LocationsFragment : Fragment(), LocationsView {
         val view = binding.root
 
 
-        val application = requireNotNull(this.activity).application
-        val dataSource = CombinationDatabase.getInstance(application).combinationDatabaseDao
 
-        val jsonData = resources.openRawResource(R.raw.data)
-        locationsPresenter = LocationsPresenterImpl(this, jsonData, dataSource)
+
+        locationsPresenter.onViewAttached(this)
+        locationsPresenter.getMaximumAptitude()
 
         getLocationsList()
 
@@ -85,51 +89,52 @@ class LocationsFragment : Fragment(), LocationsView {
 
     }
 
-    fun dataStatus(status: CombinationsApiStatus){
-        with(binding.imgLoading){
-            when(status){
-                CombinationsApiStatus.LOADING -> {
-                    this.visibility = View.VISIBLE
-                    this.setImageResource(R.drawable.loading_animation)
-                    binding.aptitudeValue.visibility = View.GONE
-                    clickLocationLambda = { locationIndex ->
-                        val locationName = locationsPresenter.locationMap[locationIndex.toKeyForLocationMap()]?.name
-                        val text = "Cargando datos, por favor intenta ingresar a $locationName " +
-                                "en unos segundos"
-                        Toast.makeText(context, text, Toast.LENGTH_SHORT)
-                            .show()
-                    }
-                }
-                CombinationsApiStatus.DONE -> {
-                    this.visibility = View.GONE
-                    binding.aptitudeValue.visibility = View.VISIBLE
-                    clickLocationLambda = {locationIndex ->
-                        val productIndex = locationsPresenter.listOfSortedProductindices[locationIndex]
-                        this@LocationsFragment.findNavController().navigate(LocationsFragmentDirections
-                            .actionUbicationsFragmentToProductDetailFragment(
-                                locationIndex.toKeyForLocationMap(), productIndex.toKeyForProductMap()))
-                    }
-                }
-                CombinationsApiStatus.ERROR -> {
-                    this.visibility = View.VISIBLE
-                    binding.aptitudeValue.visibility = View.GONE
-                    this.setImageResource(R.drawable.ic_heart_broken)
-                    clickLocationLambda = { locationName ->
-                        val text = "Error existente, revisa tu señal de internet"
-                        Toast.makeText(context, text, Toast.LENGTH_SHORT)
-                            .show()
-                    }
-                }
-            }
-        }
 
-    }
 
-    fun setAptitudeText(aptitude: String){
+    override fun setAptitudeText(aptitude: String){
         binding.aptitudeValue.text = aptitude
     }
 
+    override fun setLoadingStatus(locationMap: Map<String, Location>) {
+        with(binding.imgLoading){
+            this.visibility = View.VISIBLE
+            this.setImageResource(R.drawable.loading_animation)
+        }
+        binding.aptitudeValue.visibility = View.GONE
+        clickLocationLambda = { locationIndex ->
+            val locationName = locationMap[locationIndex.toKeyForLocationMap()]?.name
+            val text = "Cargando datos, por favor intenta ingresar a $locationName " +
+                    "en unos segundos"
+            Toast.makeText(context, text, Toast.LENGTH_SHORT)
+                .show()
+        }
+    }
 
+    override fun setErrorStatus() {
+        with(binding.imgLoading) {
+            this.visibility = View.VISIBLE
+            this.setImageResource(R.drawable.ic_heart_broken)
+        }
+        binding.aptitudeValue.visibility = View.GONE
+        clickLocationLambda = { locationName ->
+            val text = "Error existente, revisa tu señal de internet"
+            Toast.makeText(context, text, Toast.LENGTH_SHORT)
+                .show()
+        }
+    }
+
+    override fun setDoneStatus(listOfSortedProductindices: MutableList<Int>) {
+        with(binding.imgLoading){
+            this.visibility = View.GONE
+        }
+        binding.aptitudeValue.visibility = View.VISIBLE
+        clickLocationLambda = {locationIndex ->
+            val productIndex = listOfSortedProductindices[locationIndex]
+            this@LocationsFragment.findNavController().navigate(LocationsFragmentDirections
+                .actionUbicationsFragmentToProductDetailFragment(
+                    locationIndex.toKeyForLocationMap(), productIndex.toKeyForProductMap()))
+        }
+    }
 
 
     override fun onDestroyView() {

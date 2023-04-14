@@ -10,4 +10,11 @@ interface LocationsView {
     fun getLocationsList()
 
     fun viewLocationsList(list: List<Location>)
+
+    fun setAptitudeText(aptitude: String)
+
+    fun setErrorStatus()
+
+    fun setDoneStatus(listOfSortedProductindices: MutableList<Int>)
+    fun setLoadingStatus(locationMap: Map<String, Location>)
 }

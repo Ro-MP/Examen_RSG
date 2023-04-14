@@ -2,10 +2,10 @@ package com.picazodev.electroniclogistica.domain
 
 import com.picazodev.electroniclogistica.data.Location
 import com.picazodev.electroniclogistica.data.Product
-import com.picazodev.electroniclogistica.data.RepositoryImpl
+import com.picazodev.electroniclogistica.data.Repository
 import com.picazodev.electroniclogistica.data.local.Combination
 
-class LocationAlgorithm(val repository: RepositoryImpl) {
+class LocationAlgorithm(val repository: Repository) {
 
 
     private lateinit var locationsList : List<Location>
@@ -14,7 +14,7 @@ class LocationAlgorithm(val repository: RepositoryImpl) {
     private val maximumAptitudeCombination = mutableListOf< List<Int> >()
     var numeroDeIteraciones = 0
 
-    var isCombinationDatabaseNull = true
+
     var combinationList : List<Combination>? = null
 
 
@@ -53,7 +53,7 @@ class LocationAlgorithm(val repository: RepositoryImpl) {
             sortedProductIndex.add(it[1])
         }
 
-        return sortedProductIndex as List<Int>
+        return sortedProductIndex
     }
 
 
@@ -159,7 +159,7 @@ class LocationAlgorithm(val repository: RepositoryImpl) {
     }
 
     private fun getLocationAptitude(location: Location, product: Product): Double{
-        var ss = 0.0
+        var ss: Double
         if (product.weight % 2 == 0){
             ss = location.name.length * 1.5
         } else {

@@ -8,16 +8,23 @@ import android.view.ViewGroup
 import com.picazodev.electroniclogistica.R
 import com.picazodev.electroniclogistica.data.local.CombinationDatabase
 import com.picazodev.electroniclogistica.databinding.FragmentProductDetailBinding
+import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
 
+@AndroidEntryPoint
 class ProductDetailFragment : Fragment(), ProductDetailView {
 
 
     private var _binding: FragmentProductDetailBinding? = null
     private val binding get() = _binding!!
 
-    private lateinit var productDetailPresenter: ProductDetailPresenterImpl
+    @Inject
+    lateinit var productDetailPresenter: ProductDetailPresenter
 
+
+    private lateinit var args: ProductDetailFragmentArgs
+    private var bundle: Bundle? = null
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -26,35 +33,63 @@ class ProductDetailFragment : Fragment(), ProductDetailView {
         _binding = FragmentProductDetailBinding.inflate(inflater, container, false)
         val view = binding.root
 
-
-        val application = requireNotNull(this.activity).application
-        val dataSource = CombinationDatabase.getInstance(application).combinationDatabaseDao
-
-        val args = ProductDetailFragmentArgs.fromBundle(requireArguments())
-        val jsonData = resources.openRawResource(R.raw.data)
-
-        productDetailPresenter = ProductDetailPresenterImpl(this, args.locationKey, args.productKey, jsonData, dataSource)
+        bundle = savedInstanceState
+        args = ProductDetailFragmentArgs.fromBundle(requireArguments())
 
 
-
-
+        initializeViewInfoInPresenter(args.locationKey, args.productKey)
 
 
         return view
     }
 
 
-    fun printData(){
-        with(productDetailPresenter){
-            binding.tvLocationName.text = this.locationName
-            binding.tvLocationType.text = this.locationType
-            binding.tvProductName.text = this.productName
-            val weightText = "Weigth: ${this.productWeigth}"
-            binding.tvProductWeight.text = weightText
-            val volumeText = "Volume: ${this.productVolume}"
-            binding.tvProductVolume.text = volumeText
-            binding.imgLoading.visibility = View.GONE
+
+
+    override fun initializeViewInfoInPresenter(locationKey: String, productKey: String) {
+        productDetailPresenter.initializeViewInfo(this, locationKey, productKey)
+    }
+
+
+
+    override fun printLocationName(locationName: String) {
+        binding.tvLocationName.text = locationName
+    }
+
+    override fun printLocationType(locationType: String) {
+        binding.tvLocationType.text = locationType
+    }
+
+    override fun printProductName(productName: String) {
+        binding.tvProductName.text = productName
+    }
+
+    override fun printProductWeigth(productWeigth: String) {
+        val weightText = "Weigth: $productWeigth"
+        binding.tvProductWeight.text = weightText
+    }
+
+    override fun printProductVolume(productVolume: String) {
+        val volumeText = "Volume: $productVolume"
+        binding.tvProductVolume.text = volumeText
+    }
+
+    override fun unableLoadingImageVisibility() {
+        binding.imgLoading.visibility = View.GONE
+    }
+
+
+
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+
+        bundle?.apply {
+            outState.putAll(this)
         }
     }
+
+
+
 
 }

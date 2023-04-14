@@ -1,20 +1,28 @@
 package com.picazodev.electroniclogistica.data
 
+import android.provider.SyncStateContract.Helpers.insert
 import com.picazodev.electroniclogistica.data.local.Combination
+import com.picazodev.electroniclogistica.data.local.CombinationDatabase
 import com.picazodev.electroniclogistica.data.local.CombinationDatabaseDao
 import com.picazodev.electroniclogistica.data.remote.DataApi
 import com.picazodev.electroniclogistica.data.remote.DataProperty
-import com.picazodev.electroniclogistica.toKeyForLocationMap
-import com.picazodev.electroniclogistica.toKeyForProductMap
+import com.picazodev.electroniclogistica.util.toKeyForLocationMap
+import com.picazodev.electroniclogistica.util.toKeyForProductMap
+import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
-class RepositoryImpl(val dataApi: DataApi, val dataSource: CombinationDatabaseDao) : Repository {
+
+class RepositoryImpl (
+    val dataApi: DataApi,
+    val dataSource: CombinationDatabase
+) : Repository {
 
 
     /*
         Genera Maps de las listas de Product y Location
         con sus indices como parte de la Key
      */
-    suspend fun getLocationsMap(): Map<String, Location>{
+    override suspend fun getLocationsMap(): Map<String, Location>{
         val locationsList = getLocationsList()
         val locationsMap = mutableMapOf<String, Location>()
         for (index in locationsList.indices){
@@ -24,7 +32,7 @@ class RepositoryImpl(val dataApi: DataApi, val dataSource: CombinationDatabaseDa
         return locationsMap
     }
 
-    suspend fun getProductsMap(): Map<String, Product>{
+    override suspend fun getProductsMap(): Map<String, Product>{
         val productsList = getProductsList()
         val productMap = mutableMapOf<String, Product>()
         for (index in productsList.indices){
@@ -32,6 +40,8 @@ class RepositoryImpl(val dataApi: DataApi, val dataSource: CombinationDatabaseDa
             productMap[key] = productsList[index]
         }
         return productMap
+
+        this.getLocationsMap()
     }
 
 
@@ -50,19 +60,19 @@ class RepositoryImpl(val dataApi: DataApi, val dataSource: CombinationDatabaseDa
     }
 
 
-    suspend fun addCombination(sortedProductIndexList: List<Int>){
+    override suspend fun addCombination(sortedProductIndexList: List<Int>){
         val locationList = getLocationsList()
 
         for (index in locationList.indices){
             val combination = Combination(
                 index.toKeyForLocationMap(), sortedProductIndexList[index].toKeyForProductMap())
 
-            dataSource.insert(combination)
+            dataSource.combinationDatabaseDao().insert(combination)
         }
     }
 
-    suspend fun getCombinatiosList(): List<Combination>? {
-        return dataSource.getAllCombination()
+    override suspend fun getCombinatiosList(): List<Combination>? {
+        return dataSource.combinationDatabaseDao().getAllCombination()
     }
 
 }

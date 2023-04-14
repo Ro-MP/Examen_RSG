@@ -3,22 +3,22 @@ package com.picazodev.electroniclogistica.ui.locations
 
 import com.picazodev.electroniclogistica.data.Location
 import com.picazodev.electroniclogistica.data.Product
+import com.picazodev.electroniclogistica.data.Repository
 import com.picazodev.electroniclogistica.data.RepositoryImpl
-import com.picazodev.electroniclogistica.data.local.CombinationDatabaseDao
-import com.picazodev.electroniclogistica.data.remote.DataApi
 import com.picazodev.electroniclogistica.domain.LocationAlgorithm
 import kotlinx.coroutines.*
 import java.io.InputStream
+import javax.inject.Inject
 import kotlin.coroutines.CoroutineContext
 
 enum class CombinationsApiStatus { LOADING, ERROR, DONE}
 
 class LocationsPresenterImpl(
-    private val ubicationsView: LocationsFragment,
-    jsonData: InputStream,
-    dataSource: CombinationDatabaseDao
+    val repository : Repository,
+    val locationAlgorithm : LocationAlgorithm
 ) : LocationsPresenter, CoroutineScope {
 
+    private lateinit var ubicationsView: LocationsView
 
     override val coroutineContext: CoroutineContext
         get() = Dispatchers.Main + job
@@ -26,9 +26,10 @@ class LocationsPresenterImpl(
     // Evita que si una corrutina lanza una excepcion las demás no se cancelen
     private var job = SupervisorJob()
 
-    val apiInstance : DataApi = DataApi.getInstance(jsonData)
-    val repository : RepositoryImpl = RepositoryImpl(apiInstance, dataSource)
-    val locationAlgorithm = LocationAlgorithm(repository)
+
+    //@Inject lateinit var repository : RepositoryImpl
+
+    //@Inject lateinit var locationAlgorithm: LocationAlgorithm
 
     var combinationsStatus = CombinationsApiStatus.LOADING
 
@@ -40,15 +41,20 @@ class LocationsPresenterImpl(
 
 
     init {
-        getMaximumAptitude()
 
+
+    }
+
+
+    override fun onViewAttached(view: LocationsView){
+        this.ubicationsView = view
     }
 
     override fun initializeApi(jsonData: InputStream) {
 
     }
 
-    fun getListOfSortedProductindices(){
+    override fun getListOfSortedProductindices(){
         launch {
              val indices = withContext(Dispatchers.Default){
                 locationAlgorithm.getListOfProductIndex()
@@ -57,12 +63,12 @@ class LocationsPresenterImpl(
         }
     }
 
-    fun getMaximumAptitude(){
+    override fun getMaximumAptitude(){
 
         val tInicio = System.currentTimeMillis()
         launch(){
             try {
-                ubicationsView.dataStatus(CombinationsApiStatus.LOADING)
+                ubicationsView.setLoadingStatus(locationMap)
                 combinationsStatus = CombinationsApiStatus.LOADING
 
                 val maximumAptitude = withContext(Dispatchers.Default){
@@ -75,13 +81,13 @@ class LocationsPresenterImpl(
                 val tDiferencia = tFinal - tInicio
                 println("# # # -  Tiempo transcurrido: ${tDiferencia/1000.0} seg - # # #")
 
-                ubicationsView.dataStatus(CombinationsApiStatus.DONE)
+                ubicationsView.setDoneStatus(listOfSortedProductindices)
                 combinationsStatus = CombinationsApiStatus.DONE
                 ubicationsView.setAptitudeText(maximumAptitude.toString())
 
                 getListOfSortedProductindices()
             } catch (e: Exception){
-                ubicationsView.dataStatus(CombinationsApiStatus.ERROR)
+                ubicationsView.setErrorStatus()
                 combinationsStatus = CombinationsApiStatus.ERROR
                 println("# # # -  Exception: $e - # # #")
 
@@ -91,15 +97,15 @@ class LocationsPresenterImpl(
 
     }
 
-    fun setLocationMap(){
+    override fun setLocationMap(){
         locationMap = getLocationsMap()
     }
 
-    fun setProductMap(){
+    override fun setProductMap(){
         productMap = getProductsMap()
     }
 
-    fun getLocationsMap(): Map<String, Location>{
+    override fun getLocationsMap(): Map<String, Location>{
         val locationsMap = mutableMapOf<String, Location>()
         launch {
             locationsMap.putAll(
@@ -110,7 +116,7 @@ class LocationsPresenterImpl(
         return locationsMap
     }
 
-    fun getProductsMap():Map<String, Product>{
+    override fun getProductsMap():Map<String, Product>{
         val productsMap = mutableMapOf<String, Product>()
         launch {
             productsMap.putAll(

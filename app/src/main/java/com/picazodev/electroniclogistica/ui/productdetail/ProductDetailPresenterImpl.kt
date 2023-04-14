@@ -2,19 +2,12 @@ package com.picazodev.electroniclogistica.ui.productdetail
 
 import com.picazodev.electroniclogistica.data.Location
 import com.picazodev.electroniclogistica.data.Product
-import com.picazodev.electroniclogistica.data.RepositoryImpl
-import com.picazodev.electroniclogistica.data.local.CombinationDatabaseDao
-import com.picazodev.electroniclogistica.data.remote.DataApi
+import com.picazodev.electroniclogistica.data.Repository
 import kotlinx.coroutines.*
-import java.io.InputStream
 import kotlin.coroutines.CoroutineContext
 
 class ProductDetailPresenterImpl(
-    private val productDetailView: ProductDetailFragment,
-    private val locationKey: String,
-    private val productKey: String,
-    private val jsonData: InputStream,
-    dataSource: CombinationDatabaseDao
+    val repository: Repository,
 ) : ProductDetailPresenter, CoroutineScope {
 
     override val coroutineContext: CoroutineContext
@@ -24,8 +17,11 @@ class ProductDetailPresenterImpl(
     private var job = SupervisorJob()
 
 
-    val apiInstance : DataApi = DataApi.getInstance(jsonData)
-    val repository : RepositoryImpl = RepositoryImpl(apiInstance, dataSource)
+    //TODO Inicializar variables
+    private lateinit var productDetailView: ProductDetailView
+    private lateinit var locationKey: String
+    private lateinit var productKey: String
+
 
     var locationMap = mapOf<String, Location>()
     var productMap = mapOf<String, Product>()
@@ -42,24 +38,47 @@ class ProductDetailPresenterImpl(
         setProductMap()
     }
 
-    fun initializeVariables(){
+    override fun printData() {
+        productDetailView.apply {
+            this.printLocationName(locationName)
+            this.printLocationType(locationType)
+            this.printProductName(productName)
+            this.printProductWeigth(productWeigth)
+            this.printProductVolume(productVolume)
+            this.unableLoadingImageVisibility()
+        }
+    }
+
+    override fun initializeViewInfo(
+        productDetailView: ProductDetailFragment,
+        locationKey: String,
+        productKey: String) {
+
+        this.productDetailView = productDetailView
+        this.locationKey = locationKey
+        this.productKey = productKey
+
+    }
+
+
+    override fun initializeVariables(){
         locationName = locationMap[locationKey]?.name ?: ""
         locationType = locationMap[locationKey]?.type ?: ""
         productName = productMap[productKey]?.name ?: ""
         productWeigth = productMap[productKey]?.weight.toString() ?: ""
         productVolume = productMap[productKey]?.volume.toString() ?: ""
-        productDetailView.printData()
+        printData()
     }
 
-    fun setLocationMap(){
+    override fun setLocationMap(){
         locationMap = getLocationsMap()
     }
 
-    fun setProductMap(){
+    override fun setProductMap(){
         productMap = getProductsMap()
     }
 
-    fun getLocationsMap(): Map<String, Location>{
+    override fun getLocationsMap(): Map<String, Location>{
         val locationsMap = mutableMapOf<String, Location>()
         launch {
             locationsMap.putAll(
@@ -70,7 +89,7 @@ class ProductDetailPresenterImpl(
         return locationsMap
     }
 
-    fun getProductsMap():Map<String, Product>{
+    override fun getProductsMap():Map<String, Product>{
         val productsMap = mutableMapOf<String, Product>()
         launch {
             productsMap.putAll(
@@ -81,5 +100,9 @@ class ProductDetailPresenterImpl(
         }
         return productsMap
     }
+
+
+
+
 }
 
